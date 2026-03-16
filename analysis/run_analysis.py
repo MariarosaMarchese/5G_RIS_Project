@@ -16,7 +16,6 @@ from analysis_functions import (
 # -----------------------------
 # Configuration
 # -----------------------------
-# Assumes you're running from: 5G_RIS_Project/analysis/
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA_DIR = os.path.join(PROJECT_ROOT, "data", "testing_new")
 FIG_DIR = os.path.join(PROJECT_ROOT, "analysis", "figures")
@@ -27,7 +26,7 @@ ensure_dir(OUT_DIR)
 
 # Define what "steady-state" means
 SKIP_FIRST_S = 10.0   # remove first 10s
-SKIP_LAST_S = 0.0     # keep full tail; set to e.g. 5.0 if you want
+SKIP_LAST_S = 0.0     # keep full tail
 
 print("PROJECT_ROOT:", PROJECT_ROOT)
 print("DATA_DIR:", DATA_DIR)
@@ -102,7 +101,6 @@ def main():
         kpi_table.to_csv(os.path.join(OUT_DIR, f"{dist}_KPI_table.csv"), index=False)
         final_tables.append(kpi_table)
 
-        # CDF plots across all tests (good for professor: jitter distribution)
         ul_all = pd.concat([r["iperf_ul_df"] for r in dist_results], ignore_index=True)
         dl_all = pd.concat([r["iperf_dl_df"] for r in dist_results], ignore_index=True)
 

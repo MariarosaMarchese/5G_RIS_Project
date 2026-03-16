@@ -11,42 +11,45 @@ import matplotlib.pyplot as plt
 # -----------------------------
 # Utilities
 # -----------------------------
+
+# This creates a directory if it does not already exist.
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
 
+# This tries to convert a string into a float. When parsing logs, come fields may be missing or malformed. Instead of crashing, it returns None.
 def safe_float(x: str) -> Optional[float]:
     try:
         return float(x)
     except Exception:
         return None
 
-
+# It takes a numeric Pandas series and computes summary statistics. It is used everywhere to summarize throughput, jitter, BLER, SNR, etc.
 def summarize_series(s: pd.Series) -> Dict[str, float]:
     s = s.dropna()
     if len(s) == 0:
         return {"n": 0}
     return {
-        "n": float(len(s)),
-        "mean": float(s.mean()),
-        "std": float(s.std(ddof=1)) if len(s) > 1 else 0.0,
+        "n": float(len(s)),                                     # number of valid samples
+        "mean": float(s.mean()),                                # average
+        "std": float(s.std(ddof=1)) if len(s) > 1 else 0.0,     # standard deviation
         "min": float(s.min()),
-        "p25": float(s.quantile(0.25)),
-        "median": float(s.median()),
-        "p75": float(s.quantile(0.75)),
-        "p90": float(s.quantile(0.90)),
+        "p25": float(s.quantile(0.25)),                         # 25th percentile
+        "median": float(s.median()),                            # 50th percentile
+        "p75": float(s.quantile(0.75)),                         # 75th percentile
+        "p90": float(s.quantile(0.90)),                           
         "p95": float(s.quantile(0.95)),
         "max": float(s.max()),
     }
 
 
-# -----------------------------
-# iperf3 UDP parsing
-# -----------------------------
+# ------------------------------------------------------------------------------------
+# iperf3 UDP parsing: The goal is to transform raw text logs into structured tables.
+# ------------------------------------------------------------------------------------
 @dataclass
 class IperfUDPResult:
-    df: pd.DataFrame  # per-interval data
-    summary: Dict[str, float]
+    df: pd.DataFrame             # per-interval data
+    summary: Dict[str, float]    # the global statistics computed from that dataframe
 
 
 def parse_iperf3_udp_text(text: str) -> IperfUDPResult:
@@ -132,12 +135,16 @@ def parse_iperf3_udp_text(text: str) -> IperfUDPResult:
     if df.empty:
         return IperfUDPResult(df=df, summary={"n": 0})
 
-    # Try to compute a goodput estimate if loss is available (UDP receiver side)
-    # goodput ≈ bitrate * (1 - loss%)
+    """
+    Try to compute a goodput estimate if loss is available (UDP receiver side): this estimates the actually useful received rate after accounting for packet loss.
+    goodput ≈ bitrate * (1 - loss%)
+    Throughput is what was sent/measured as rate, while goodput is closer to what was effectively delivered.
+    """
     if "loss_percent" in df.columns and df["loss_percent"].notna().any():
         df["goodput_Mbps"] = df["bitrate_Mbps"] * (1.0 - df["loss_percent"] / 100.0)
     else:
         df["goodput_Mbps"] = np.nan
+        
 
     # Summary stats
     summary = {}
@@ -157,8 +164,8 @@ def load_iperf_file(path: str) -> IperfUDPResult:
 def trim_steady_state_iperf(df: pd.DataFrame, skip_first_s: float = 10.0, skip_last_s: float = 0.0) -> pd.DataFrame:
     """
     Remove transient (e.g., first 10s) and optionally tail.
-    This addresses your professor's "specify the intervals":
-      -> you can explicitly say: "metrics computed over [10s, 110s]" etc.
+    In real experiments, the first seconds often include setup instability, scheduler adaptation, etc.,
+    so if the test runs from 0s to 120s and we skip the first 10s, the analysis uses only the steady-state region.
     """
     if df.empty:
         return df
@@ -172,6 +179,8 @@ def trim_steady_state_iperf(df: pd.DataFrame, skip_first_s: float = 10.0, skip_l
 # -----------------------------
 # OAI log parsing (gNB/UE)
 # -----------------------------
+
+# Store the rafio metrics extracted from OAI logs.
 @dataclass
 class OAILogMetrics:
     rsrp_dbm: pd.Series
@@ -189,7 +198,7 @@ def parse_oai_metrics(text: str) -> OAILogMetrics:
       UE ... ulsch_rounds ... BLER 0.04373 ... SNR 33.0 dB ...
 
     Notes:
-    - BLER in your logs appears as a fraction (0..1), so we convert to percent.
+    - BLER in the logs appears as a fraction (0..1), so we convert to percent.
     """
 
     # RSRP line
@@ -246,15 +255,19 @@ def load_oai_log(path: str) -> OAILogMetrics:
     return parse_oai_metrics(txt)
 
 
-# -----------------------------
-# Plotting helpers
-# -----------------------------
+# -----------------------------------
+# Plotting helpers for visualization
+# -----------------------------------
+
+# Computing empirical CDF
 def plot_cdf(data: pd.Series, title: str, xlabel: str, outpath: str) -> None:
     data = data.dropna().values
     if len(data) == 0:
         return
     x = np.sort(data)
-    y = np.arange(1, len(x) + 1) / len(x)
+    y = np.arange(1, len(x) + 1) / len(x)   
+    # For each x-value, y tells us the fraction of observations less than or equal to that value.
+    
     plt.figure()
     plt.plot(x, y)
     plt.grid(True)
@@ -265,6 +278,7 @@ def plot_cdf(data: pd.Series, title: str, xlabel: str, outpath: str) -> None:
     plt.savefig(outpath, dpi=200)
     plt.close()
 
+# To compare two datasets on the same figure.
 def plot_cdf_overlay(
     s1: pd.Series,
     s2: pd.Series,
@@ -302,6 +316,7 @@ def plot_cdf_overlay(
     plt.close()
 
 
+# To plot a metric over time: this helps reveal instability, spikes, transient behavior or trends.
 def plot_time_series(df: pd.DataFrame, ycol: str, title: str, ylabel: str, outpath: str) -> None:
     if df.empty or ycol not in df.columns:
         return
@@ -317,7 +332,7 @@ def plot_time_series(df: pd.DataFrame, ycol: str, title: str, ylabel: str, outpa
     plt.close()
 
 def concat_iperf_by_distance(results: List[Dict]) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Concatenate steady-state iperf data across tests for one distance."""
+    """Concatenate steady-state iperf data across tests for one distance (we get one large combined dataset for all tests at 1m, etc.))."""
     ul_all = pd.concat(
         [r["iperf_ul_df"] for r in results if isinstance(r.get("iperf_ul_df"), pd.DataFrame)],
         ignore_index=True
@@ -465,7 +480,7 @@ def aggregate_distance(results: List[Dict], direction: str) -> pd.DataFrame:
     for r in results:
         summ = r.get(f"iperf_{direction}_summary", {})
         row = {"test_path": r["test_path"]}
-        # Keep only key summary fields you likely want in tables
+        # Keep only key summary fields that we likely want in tables
         for k in ["throughput_mean", "throughput_median", "throughput_p95",
                   "jitter_mean", "jitter_median", "jitter_p95",
                   "losspct_mean", "losspct_p95",
@@ -480,7 +495,7 @@ def aggregate_distance(results: List[Dict], direction: str) -> pd.DataFrame:
 def build_final_kpi_table(results: List[Dict], label: str) -> pd.DataFrame:
     """
     Produces a thesis-friendly KPI table (one row for the distance label).
-    Uses medians (robust) + p5/p95 hints via columns if you want.
+    Uses medians (robust) + p5/p95 hints via columns.
     """
     # Concatenate per-interval iperf data across tests
     ul_all = pd.concat([r["iperf_ul_df"] for r in results if isinstance(r.get("iperf_ul_df"), pd.DataFrame)], ignore_index=True)
