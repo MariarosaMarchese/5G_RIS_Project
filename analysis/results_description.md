@@ -13,14 +13,14 @@ The time-series plots show almost flat curves with only very small
 interval-to-interval fluctuations. This behavior indicates that the downlink channel is able to sustain the target traffic continuously under the considered experimental conditions.
 
 ### DL Throughput at 1m distance
-![DL Throughput at 1m distance](dl_throughput_1m.png)
+![DL Throughput at 1m distance](results_plots/dl_throughput_1m.png)
 The time-series analysis of the downlink throughput at 1 m shows an almost perfectly constant behavior across all three tests. In every run, the achieved rate remains essentially equal to the offered 10 Mbps load, with only minimal interval-to-interval fluctuations. 
 
 Test 2 is completely flat, while Tests 1 and 3 exhibit a few small transient deviations that remain within a very narrow range around the nominal value.
 Overall, these results confirm that the downlink channel is able to sustain the target traffic continuously and reproducibly under the considered short-distance condition.
 
 ### DL Throughput at 2m distance
-![DL Throughput at 2m distance](dl_thorughput_2m.png)
+![DL Throughput at 2m distance](results_plots/dl_thorughput_2m.png)
 
 The time-series analysis of downlink throughput at 2 m shows a nearly constant rate equal to the offered 10 Mbps traffic in all three experiments. Apart from a brief transient event observed in one run, the throughput remains tightly centered around the target value with only minimal fluctuations attributable to measurement granularity. 
 
@@ -43,7 +43,7 @@ This behavior suggests the presence of **retransmissions, delayed scheduling
 opportunities, or buffering effects** in the uplink.
 
 ### UL Throughput at 1m distance
-![UL Throughput at 1m distance](ul_thorughput_1m.png)
+![UL Throughput at 1m distance](results_plots/ul_thorughput_1m.png)
 
 The uplink behavior at 1 m is noticeably different from the downlink. It is still stable, but it shows more variability.
 
@@ -76,7 +76,7 @@ Uplink is different because:
 All of this produces the small oscillations we see.
 
 ### UL Throughput at 2m distance
-![UL Throughput at 2m distance](ul_thorughput_2m.png)
+![UL Throughput at 2m distance](results_plots/ul_thorughput_2m.png)
 
 In contrast to the downlink behavior, the uplink throughput at 2 m exhibits a pronounced degradation. **Across all three experiments, the achieved rate remains around 0.03–0.05 Mbps, nearly two orders of magnitude lower than the values observed at 1 m**. Moreover, the time-series analysis reveals a periodic oscillatory pattern characterized by short bursts of successful transmissions followed by intervals with minimal throughput.
 
@@ -94,7 +94,7 @@ These results indicate that increasing the UE–gNB distance from **1 m to
 2 m does not significantly affect downlink delay stability**.
 
 ### DL Jitter at 1m distance
-![DL Jitter at 1m distance](dl_jitter_1m.png)
+![DL Jitter at 1m distance](results_plots/dl_jitter_1m.png)
 All three figures show the **downlink jitter over time** during three independent experiments at **1 meter distance**. A single point meant that the jitter is measured during a 1-second interval: the plot connects the points with a line, but in reality the measurements are discrete samples.
 
 Jitter naturally fluctuates  (it changes from point to point) because each second:
@@ -118,7 +118,7 @@ For example, the gNb MAC scheduler may delay a packet by one extra slot. Or, if 
 Hence, **the time-series analysis of the downlink jitter at 1 m shows a consistently stable behavior across the three independent tests**. In all cases, the jitter remains tightly bounded between approximately 1.5 ms and 1.9 ms, with only occasional transient fluctuations. Test 1 and Test 3 exhibit isolated spikes reaching approximately 2.1–2.2 ms, while Test 2 shows slightly smoother behavior. However, the overall jitter levels remain comparable across all tests, indicating a stable and reproducible downlink scheduling performance under the considered experimental conditions.
 
 ### DL Jitter at 2m distance
-![DL Jitter at 2m distance](dl_jitter_2m.png)
+![DL Jitter at 2m distance](results_plots/dl_jitter_2m.png)
 The **downlink behavior at 2 m looks very stable and consistent**, and it is actually very similar to what we observed at **1 m**. The only unusual element is the **single large spike in test1**, but it appears to be a transient event rather than a systematic problem.
 Across the three experiments, the downlink jitter mostly stays in the range **≈ 1.6 ms – 1.8 ms**. 
 This is almost identical to what wesaw at **1 m**, which indicates that increasing the distance from 1 m to 2 m **does not significantly affect downlink delay stability**. 
@@ -144,7 +144,7 @@ conditions in the considered experimental setup.
 
 ### UL Jitter at 1m distance
 
-![UL Jitter at 1m distance](ul_jitter_1m.png)
+![UL Jitter at 1m distance](results_plots/ul_jitter_1m.png)
 In uplink, the jitter is mostly around:
 
 - **test1:** about **2.0–4.5 ms**
@@ -163,7 +163,7 @@ These results are consistent with the downlink-dominant TDD allocation strategy.
 So, in contrast to the downlink, **the uplink jitter time series at 1 m exhibits substantially larger fluctuations and a higher overall level**. Across all three tests, the UL jitter typically lies between about 2 and 3.5 ms, with several transient peaks approaching 4 ms or more. Although the exact temporal evolution differs among runs, the three experiments consistently indicate that uplink transmission is more delay-variable and less repeatable than downlink transmission, likely due to the stronger impact of uplink scheduling and retransmission dynamics.
 
 ### UL Jitter at 2m distance
-![UL Jitter at 2m distance](ul_jitter_2m.png)
+![UL Jitter at 2m distance](results_plots/ul_jitter_2m.png)
 These plots indicate that **the uplink is entering a strongly unstable or congested regime**. The jitter increased by roughly two orders of magnitude. This is not a small degradation, it means the uplink scheduling or buffering behavior changes drastically.
 
 **Test 1** shows a ramp-up and then a plateau. The jitter starts around 270 ms, quickly increases to ~303 ms and then becomes extreamely flat. The flat line means packets are arriving with almost constant delay variation, but that delay variation is already very large. In other words, packets are probably queued before transmission, producing a constant high jitter.
@@ -180,7 +180,7 @@ While the downlink remains largely unaffected by the increase in distance, the u
 
 The following figure summarizes the steady-state performance comparison between the **1 m** and **2 m** UE–gNB distances.
 
-![Comparison between scenarios](comparison.png)
+![Comparison between scenarios](results_plots/comparison.png)
 
 The plots compare the distributions of **throughput** and **jitter** for both
 downlink (DL) and uplink (UL) transmissions. Downlink metrics are represented
